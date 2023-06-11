@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyScrapers</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.2.0/p5.js"
+        integrity="sha512-cuCpFhuSthtmbmQ5JjvU7msRYynRI67jVHsQhTP8RY+H4BC9qa9kQJeHTomV9/QnOWJbDpLFKdbIHtqTomJJug=="
+        crossorigin="anonymous"></script>
+
+    <!-- <script src = "https://cdn.jsdelivr.net/gh/XReLeo/Grattaceli/Clues.js"></script>
+    <script src = "https://cdn.jsdelivr.net/gh/XReLeo/Grattaceli/Grid.js"></script>
+    <script src = "https://cdn.jsdelivr.net/gh/XReLeo/Grattaceli/GameCreation.js"></script>
+    <script src = "https://cdn.jsdelivr.net/gh/XReLeo/Grattaceli/Interaction.js"></script> -->
+
+    <script src="SkyScrapers/Clues"></script>
+    <script src="SkyScrapers/Grid"></script>
+    <script src="SkyScrapers/GameCreation"></script>
+    <script src="SkyScrapers/Interaction"></script>
+
+
+</head>
+
+<body onunload="send_data()">
+
+    <center>
+        <h1 id="title">Grattaceli</h1>
+    </center>
+
+</body>
+
+<script>
+
+    var window_height = window.innerHeight;
+    var window_width = window.innerWidth;
+
+    //REGOLE DEL GIOCO
+    var N = 5; //numero di righe e colonne
+    var cols = N;
+    var rows = N;
+
+    var GAME = false;//DIVENTA TRUE QUANDO VIENE CREATO IL GIOCO
+    var max_iterations = 50000;
+    var side_length = (window_width) / (N + 2 + 1.5);//lunghezza del lato della cella
+    var clr = 255//colore di una cella di default
+    var cnvx = 0;
+    var cnvy = 80;
+    var dimCanvas_x = window_width - cnvx;
+    var dimCanvas_y = window_height - cnvy;
+    const back_color = 255;
+    var rectangle;
+
+    const NUM_SIZE = side_length / 1.7;//size of numbers
+    const NUM_CLUES = 2*N;//number of clues showed
+
+    //INTERACTION
+    const yElements = (4.5 + N) * side_length;
+    let RemoveButton;
+    let BackButton;
+    const sizeButton = 1.5 * side_length;
+
+    let to_load_data = null;
+
+    function setup() {
+
+        cnv = createCanvas(dimCanvas_x, dimCanvas_y);
+        cnv.id('canvas');
+        cnv.position(cnvx, cnvy);
+        canv = document.getElementById('canvas')
+        rectangle = canv.getBoundingClientRect();
+
+        var button_newGame = createButton('new Game');
+        button_newGame.addClass('newGame');
+        button_newGame.position(window_width - 90, cnvy);
+
+        document.querySelector('.newGame').addEventListener('click', () => {
+
+            CreateNewGame();
+
+        });
+
+        
+
+        var button_Help = createButton('Help');
+        button_Help.addClass('Help');
+        button_Help.position(10, cnvy);
+
+        document.querySelector('.Help').addEventListener('click', () => {
+
+            GiveHelp();
+            ShowGrid();
+            send_data();
+
+        });
+
+        background(back_color);
+
+        RemoveButton = new ButtonRubbish(window_width - sizeButton - side_length, yElements + 2*side_length, sizeButton);
+        RemoveButton.show();
+
+        BackButton = new ButtonBack(sizeButton + side_length, yElements + 2 * side_length, sizeButton);
+        BackButton.show();
+
+        get_data()
+        .then(() => {
+
+            if (!(to_load_data.grid && to_load_data.cluegrid && to_load_data.cluegrid[0][0] != null )) {
+
+                CreateGrid();
+                CreateClueGrid();
+
+                FillCells();
+                CreateClues();
+
+                ShowGrid();
+                ShowClueGrid();
+
+                CreateElements();
+                ResetGrid();
+            }
+            else {
+                CreateGrid_from_data(to_load_data.grid);
+                CreateClueGrid(to_load_data.cluegrid);
+                ShowClueGrid();
+                CreateElements();
+                SolutionMatrix = to_load_data.solution;
+                let Usage = to_load_data.usage;
+                NotUsed = []
+                for (let i = 0; i < rows; i++) {
+                    for (let j = 0; j < cols; j++) {
+                        if(Usage[i][j] == 0){
+                            let x = j * side_length + (window_width - N * side_length) / 2;
+                            let y = i * side_length + 2 * side_length;
+                            let cella = {i: i, j: j};//crea una nuova cella
+                            NotUsed.push(cella);
+                        }
+                        else if(Usage[i][j] == 1){
+                            grid[i][j].color = true;
+                        }
+                    }
+                }
+            }
+
+            ShowGrid();
+
+        });
+
+        document.querySelector('#canvas').addEventListener('click', (event) => {
+
+            CheckElements();
+            CheckGrid();
+            CheckRemove();
+            RemoveValue();
+            Back();
+
+            ShowGrid();
+            ShowClueGrid();
+            for (el of Elements) {
+                el.show();
+            }
+            RemoveButton.show();
+        
+        })
+
+    }
+
+    function CreateNewGame(){
+
+        selected_Element = null;
+        waitRemove = false;
+        FilledCells = [];
+        NotUsed = [];
+
+        background(back_color);
+
+        ResetClues();
+        ResetGrid();
+        ResetElements();
+
+        FillCells();
+        CreateClues();
+
+        ResetGrid();
+
+        ShowGrid();
+        ShowClueGrid();
+        RemoveButton.show();
+        BackButton.show();
+        for (el of Elements) {
+            el.show();
+        }
+
+    }
+
+    function Remove(arr, el){
+
+        let toRemove_index = null;
+
+        for(let i = 0; i < arr.length; i++){
+            if(arr[i] == el){
+                toRemove_index = i;
+            }
+        }
+
+        let aux = arr[arr.length - 1];
+        arr[arr.length - 1] = el;
+        arr[toRemove_index] = aux;
+
+        arr.pop();
+    }
+
+    function NotUsed_includes(i, j){
+        let res = false;
+        for(let cell of NotUsed){
+            if(cell.i == i && cell.j == j){
+                res = true;
+            }
+        }
+        return res;
+    }
+
+    async function get_data(){
+
+        const options = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({})
+        };
+        const path = window.location.href + '/get_data'
+        const res = await fetch(path, options);
+        to_load_data = await res.json()
+
+    }
+
+    async function send_data() {
+
+        grid_for_json = {
+            grid: [],
+            cluegrid: [],
+            solution: SolutionMatrix,
+            usage: []
+        }
+
+        for (let i = 0; i < rows; i++) {
+            grid_for_json.grid.push([])
+            grid_for_json.usage.push([])
+            for (let j = 0; j < cols; j++) {
+                cell = grid[i][j];
+                grid_for_json.grid[i].push(cell.value);
+                if(NotUsed_includes(i, j)){
+                    grid_for_json.usage[i].push(0);
+                }
+                else{
+                    grid_for_json.usage[i].push(1);
+                }
+            }
+        }
+
+        for (let i = 0; i < 4; i++) {
+            grid_for_json.cluegrid.push([])
+            for (let j = 0; j < N; j++) {
+                cell = CluesGrid[i][j];
+                grid_for_json.cluegrid[i].push(cell.clue)
+            }
+        }
+
+        console.log(grid_for_json)
+        const options = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(grid_for_json)
+        };
+
+        const path = window.location.href + '/data'
+        const res2 = await fetch(path, options);
+    }
+
+</script>
+
+</html>

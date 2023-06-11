@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logic Games</title>
+</head>
+
+<body>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/XReLeo/LogicGames/style.css">
+
+    <center>
+        <h1>Logic Games</h1>
+        <nav class='bar'>
+            <ul id = 'ul'>
+                <!--in hrfes there has to be the route to the location where the 
+                server serves the html file that youo whant to access-->
+                <li class='game'><a href="" class='game' id = 'sky'>Skyscrapers</a></li>
+                <li class='game'><a href="" class='game' id = 'bs'>Battleship</a></li>
+                <li class='game'><a href="" class='game'>Chiocciola</a></li>
+            </ul>
+        </nav>
+    </center>
+
+    <script>
+
+        async function go_with_fetch() {
+
+            try {
+
+                const options = {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({})
+                };
+
+                const path = window.location.href + '/select'
+                const res = await fetch(path, options);
+                const json = await res.json();
+                const user = json.user;
+
+                const path_sky = `/LogicGames/${user}/SkyScrapers`
+                const path_bs = `/LogicGames/${user}/BattleShip`
+                document.getElementById('sky').href = path_sky
+                document.getElementById('bs').href = path_bs
+                
+            } catch (error) {
+                console.error(`Error: ${error}`);
+            }
+
+        }
+        
+        go_with_fetch()
+    </script>
+
+</body>
+
+</html>

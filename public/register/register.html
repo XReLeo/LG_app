@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+
+</head>
+
+<body>
+
+  <div>
+  
+    <label for="txt">User:</label>
+    <input type="text" id="user" name="user">
+  
+    <!-- <label for="pwd">Password:</label>
+    <input type="password" id="pwd" name="pwd"> -->
+    
+    <button id='submit'>Submit</button>
+
+    <p id = 'non-success'></p>
+  
+  </div>
+
+  <script>
+
+    document.getElementById('submit').addEventListener('click', async () =>{
+
+      try {
+        const input_user = document.getElementById('user');
+        // const input_pass = document.getElementById('pwd');
+        const user = input_user.value;
+        // const pass = input_pass.value;
+        const data = { user };
+        const options = {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        };
+
+        //sends the body of options to the endpoint '/api'
+        const response = await fetch('/register', options);
+        //fetch returns the server response to the post
+        const json = await response.json();
+
+        if(json.status == 'success'){
+          console.log(response);
+          document.body.innerHTML += '<a href="/" style="display: none;" id="link_home">Link</a>';
+          document.getElementById("link_home").click();
+        }
+        else{
+          input_user.value = null;
+          // input_pass.value = null;
+
+          const p = document.getElementById('non-success');
+          p.textContent = 'Username not available';
+          console.log(json);
+        }
+
+      } catch (err) {
+        console.error(`Error: ${err}`);
+      }
+
+    })
+
+  </script>
+
+</body>
+
+</html>

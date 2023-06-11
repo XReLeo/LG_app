@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BattleShip</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.2.0/p5.js"
+        integrity="sha512-cuCpFhuSthtmbmQ5JjvU7msRYynRI67jVHsQhTP8RY+H4BC9qa9kQJeHTomV9/QnOWJbDpLFKdbIHtqTomJJug=="
+        crossorigin="anonymous"></script>
+
+    <!-- <script src="https://cdn.jsdelivr.net/gh/XReLeo/BattagliaNavale/Interaction.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/XReLeo/BattagliaNavale/Elements.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/XReLeo/BattagliaNavale/Grid.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/XReLeo/BattagliaNavale/Navi.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/XReLeo/BattagliaNavale/Indizi.js"></script> -->
+
+    <script src="BattleShip/Interaction"></script>
+    <script src="BattleShip/Elements"></script>
+    <script src="BattleShip/Grid"></script>
+    <script src="BattleShip/Navi"></script>
+    <script src="BattleShip/Indizi"></script>
+
+    
+    
+
+</head>
+
+<body onunload="send_data()">
+    
+    <center>
+        <h1 id="title">Battaglia Navale</h1>
+    </center>
+
+</body>
+
+<script>
+
+    var window_height = window.innerHeight;
+    var window_width = window.innerWidth;
+
+    //REGOLE DEL GIOCO
+    var N = 7; //numero di righe e colonne
+    var cols = N;
+    var rows = N;
+
+    var GAME = false;//DIVENTA TRUE QUANDO VIENE CREATO IL GIOCO
+    var max_iterations = 50000;
+    var side_length = (window_width) / (N + 2);//lunghezza del lato della cella
+    var spaceForShips = 3*N * side_length;//spazio per navi non ancora inserite
+    var clr = 255//colore di una cella di default
+    var cnvx = 0;
+    var cnvy = 80;
+    var dimCanvas_x = window_width - cnvx;
+    var dimCanvas_y = window_height - cnvy;
+    const back_color = 255;
+    var rectangle;
+
+    //INTERACTIVE
+    const botton_heigth = 40;
+
+    let rotation = 0;// 0 = up, 1 = right, 2 = down, 3 = left
+    const element_size = 100;
+    const element_rounding = element_size / 2;
+    const selected_el_X = cnvx + 2.2 * side_length ;
+    const selected_el_Y = cnvy + (N + 1) * side_length;
+    let selected_element = undefined;
+    let view = 0;//diventa 1 quando vengono mostrate le navi
+    var RotateButton;
+
+    //NAVI
+    const extra = 7 / 8 * side_length; //spessore della parte di canvas non coperta dalla griglia
+    const extra_for_circle = 0.5 * side_length;
+    const r = 7 / 10 * side_length;//raggio delle navi da uno
+    const rounded = 20;
+
+    function setup() {
+
+        var button_Help = createButton('Help');
+        button_Help.addClass('Help');
+        button_Help.position(cnvx, cnvy - 20);
+
+        var button_newGame = createButton('new Game');
+        button_newGame.addClass('newGame');
+        button_newGame.position(0.999 * N * side_length, cnvy - 20);
+
+
+        //(N + 2) * side_length
+        //(N + 1) + side_length + spaceForShips
+        cnv = createCanvas(dimCanvas_x, dimCanvas_y);
+        cnv.id('canvas');
+        cnv.position(cnvx, cnvy);
+        canv = document.getElementById('canvas')
+        rectangle = canv.getBoundingClientRect();
+
+        background(back_color);
+
+        let buttonSize = 1/6 * width;
+        RotateButton = new ButtonRotate(7/8 * width, 5.5 / 8 * height, buttonSize)
+        RemoveButton = new ButtonRubbish(7 / 8 * width, RotateButton.y + 4/3 * buttonSize, buttonSize)
+
+        //asyncronous part
+        get_data()
+            .then(() => {
+
+                if (!(to_load_data.grid && to_load_data.naviPosizionate && to_load_data.elements)) {
+
+                    CreateGame();
+                    RemoveButton.show();
+                    RotateButton.show();
+                }
+                else {
+                    CreateGame_from_data(to_load_data);
+                    RemoveButton.show();
+                    RotateButton.show();
+                }
+
+            });
+
+        //mostra tutte la navi che è possibile inserire
+        RotateButton.show();
+        RemoveButton.show();
+
+        document.querySelector('.newGame').addEventListener('click', () => {
+
+            CreateGame();
+            //mostra tutte la navi che è possibile inserire
+            RotateButton.show();
+            RemoveButton.show();
+            
+        });
+
+
+        //mostra tutte le le navi
+        document.querySelector('.Help').addEventListener('click', () => {
+            GiveHelp();
+            ShowParts();
+        });
+
+        //INTERACTIVE PART----------------------------->
+
+        document.querySelector('#canvas').addEventListener('click', (event) => {
+
+            if(GAME){
+                
+                CheckGrid();
+
+                CheckElements();
+                for (el of Elements) {
+                    el.show();
+                }
+
+                CheckRotate();
+
+                if (waitRemove) RemoveElement();
+
+                CheckRemove();
+
+                ShowGrid();
+                ShowElements();
+                RemoveButton.show();
+                RotateButton.show();
+            }
+
+            
+        })
+
+    }
+
+    function CreateGame(){
+
+        GAME = true;
+
+        background(back_color);
+        grid = [];
+        PosizioniPossibili = [];
+        Numeri_R = [];
+        Numeri_C = [];
+        navi = [];
+        naviPosizionate = [];
+        ResetNaviToShow();
+
+        //finche non riesci a sistemare tutte le navi
+        var stop = false;
+        var n = 0;
+        while (stop == false && n < max_iterations) {
+
+            stop = true;
+
+            //crea una griglia
+            CreateGrid();
+            //crea delle navi
+            creaNavi();
+
+            for (let i = numeri.length - 1; i >= 0; i--) {
+                for (let j = numeri[i] - 1; j >= 0; j--) {
+
+                    var trovato = PosizionaNave(i, j);//true se e posizionata, false se non lo e
+                    //se posizioni la nave, toglila dal vettore navi[i]
+                    if (trovato == true) {
+                        naviPosizionate.push(navi[i][j]);
+                        navi[i].pop();
+                    }
+
+                }
+                //se tutte le navi di lunghezza dim sono state posizionate, togli navi[i] dal vettore navi
+                if (navi[i].length == 0) {
+                    navi.pop();
+                }
+            }
+            //se ci sono ancora navi da sistemare, ricomincia con le condizioni iniziali
+            if (navi.length > 0) {
+                stop = false;
+                navi = [];
+                naviPosizionate = [];
+                grid = [];
+            }
+
+            n++;
+
+        }
+        //aggiungi gli indizi da mostrare 
+        addIndizi();
+
+        //mostra la griglia vuota
+        ShowGrid();
+
+        //conta per ogni riga e ogni colonna il numero di celle nere presenti
+        ContaCelleNere();
+        //mostrali nel posto corretto
+        ShowNumeri();
+        //mostra gli indizi
+        ShowIndizi();
+
+        //crea gli elementi da inserire
+        CreateElements();
+        //mostra gli elementi
+        for(el of Elements){
+            el.show();
+        }
+
+        TakeParts();
+
+    }
+
+function CreateGame_from_data() {
+
+        GAME = true;
+
+        background(back_color);
+        grid = to_load_data.grid;
+        Numeri_R = [];
+        Numeri_C = [];
+        naviPosizionate = to_load_data.naviPosizionate;
+
+        //mostra la griglia vuota
+        ShowGrid();
+
+        //conta per ogni riga e ogni colonna il numero di celle nere presenti
+        ContaCelleNere();
+        //mostrali nel posto corretto
+        ShowNumeri();
+        //mostra gli indizi
+        ShowIndizi();
+
+        //crea gli elementi da inserire
+        CreateElements(to_load_data.elements);
+        //mostra gli elementi
+        for (el of Elements) {
+            el.show();
+        }
+
+        TakeParts();
+        ShowElements();
+
+    }
+
+    function Remove(arr, el) {
+
+        let toRemove_index = null;
+
+        for (let i = 0; i < arr.length; i++) {
+            if (arr[i] == el) {
+                toRemove_index = i;
+            }
+        }
+
+        let aux = arr[arr.length - 1];
+        arr[arr.length - 1] = el;
+        arr[toRemove_index] = aux;
+
+        arr.pop();
+    }
+
+    async function get_data() {
+
+        const options = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({})
+        };
+        const path = window.location.href + '/get_data'
+        const res = await fetch(path, options);
+        to_load_data = await res.json()
+
+    }
+
+    async function send_data() {
+
+        elements = [];
+        for(let el of Elements){
+            elements.push(el.used);
+        }
+
+        grid_for_json = {
+            grid: grid,
+            naviPosizionate: naviPosizionate, 
+            elements: elements
+        }
+
+        console.log(grid_for_json)
+        const options = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(grid_for_json)
+        };
+
+        const path = window.location.href + '/data'
+        const res2 = await fetch(path, options);
+    }
+
+</script>
+
+</html>
