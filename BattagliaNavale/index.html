@@ -98,23 +98,9 @@
         RotateButton = new ButtonRotate(7/8 * width, 5.5 / 8 * height, buttonSize)
         RemoveButton = new ButtonRubbish(7 / 8 * width, RotateButton.y + 4/3 * buttonSize, buttonSize)
 
-        //asyncronous part
-        get_data()
-            .then(() => {
-
-                if (!(to_load_data.grid && to_load_data.naviPosizionate && to_load_data.elements)) {
-
-                    CreateGame();
-                    RemoveButton.show();
-                    RotateButton.show();
-                }
-                else {
-                    CreateGame_from_data(to_load_data);
-                    RemoveButton.show();
-                    RotateButton.show();
-                }
-
-            });
+        CreateGame();
+        RemoveButton.show();
+        RotateButton.show();
 
         //mostra tutte la navi che è possibile inserire
         RotateButton.show();

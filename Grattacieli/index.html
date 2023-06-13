@@ -22,7 +22,7 @@
 
 </head>
 
-<body onunload="send_data()">
+<body>
 
     <center>
         <h1 id="title">Grattaceli</h1>
@@ -102,49 +102,20 @@
         BackButton = new ButtonBack(sizeButton + side_length, yElements + 2 * side_length, sizeButton);
         BackButton.show();
 
-        get_data()
-        .then(() => {
+        CreateGrid();
+        CreateClueGrid();
 
-            if (!(to_load_data.grid && to_load_data.cluegrid && to_load_data.cluegrid[0][0] != null )) {
+        FillCells();
+        CreateClues();
 
-                CreateGrid();
-                CreateClueGrid();
+        ShowGrid();
+        ShowClueGrid();
 
-                FillCells();
-                CreateClues();
+        CreateElements();
+        ResetGrid();
 
-                ShowGrid();
-                ShowClueGrid();
+        ShowGrid();
 
-                CreateElements();
-                ResetGrid();
-            }
-            else {
-                CreateGrid_from_data(to_load_data.grid);
-                CreateClueGrid(to_load_data.cluegrid);
-                ShowClueGrid();
-                CreateElements();
-                SolutionMatrix = to_load_data.solution;
-                let Usage = to_load_data.usage;
-                NotUsed = []
-                for (let i = 0; i < rows; i++) {
-                    for (let j = 0; j < cols; j++) {
-                        if(Usage[i][j] == 0){
-                            let x = j * side_length + (window_width - N * side_length) / 2;
-                            let y = i * side_length + 2 * side_length;
-                            let cella = {i: i, j: j};//crea una nuova cella
-                            NotUsed.push(cella);
-                        }
-                        else if(Usage[i][j] == 1){
-                            grid[i][j].color = true;
-                        }
-                    }
-                }
-            }
-
-            ShowGrid();
-
-        });
 
         document.querySelector('#canvas').addEventListener('click', (event) => {
 

@@ -20,26 +20,19 @@
     <input type="password" id="pwd" name="pwd"> -->
 
     <button id='submit'>Login</button>
-    <button id='register'>Register</button>
 
     <p id='non-success'></p>
 
   </div>
 
   <script>
-
-    document.getElementById('register').addEventListener('click', async () => {
-      document.body.innerHTML += '<a href="/register" style="display: none;" id="link_register">Link</a>';
-      document.getElementById("link_register").click();
-    })
     
     document.getElementById('submit').addEventListener('click', async () => {
 
       try {
+        // send user data
         const input_user = document.getElementById('user');
-        // const input_pass = document.getElementById('pwd');
         const user = input_user.value;
-        // const pass = input_pass.value;
         const data = { user };
         const options = {
           method: 'POST',
@@ -48,24 +41,20 @@
           },
           body: JSON.stringify(data)
         };
-
-        //sends the body of options to the endpoint '/api'
+        
+        //response from the server
         const response = await fetch('/access', options);
-        //fetch returns the server response to the post
         const json = await response.json();
 
         const path_to_select = `/LogicGames/${ user }`
         if (json.status == 'success') {
           document.body.innerHTML += `<a href='${path_to_select}' style="display: none;" id="link">Link</a>`;
           document.getElementById("link").click();
-          // window.open("https://xreleo.github.io/LogicGames/")
         }
         else {
           input_user.value = null;
-          // input_pass.value = null;
-
           const p = document.getElementById('non-success');
-          p.textContent = 'You are not registered, click Register';
+          p.textContent = 'Some error occured';
           console.log(json);
         }
 
