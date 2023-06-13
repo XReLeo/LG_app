@@ -22,10 +22,23 @@
 
 </head>
 
+<style>
+html{
+  background: url(Skyscrapers/images) no-repeat center center fixed;
+  background-size:cover;/*to cover all the space*/
+}
+
+#title{
+    color:rgb(248, 134, 4);
+    font-family:Arial, Helvetica, sans-serif;
+    font-weight: bold;
+}
+</style>
+
 <body>
 
     <center>
-        <h1 id="title">Grattaceli</h1>
+        <h1 id="title">Skyscrapers</h1>
     </center>
 
 </body>
@@ -47,7 +60,7 @@
     var cnvx = 0;
     var cnvy = 80;
     var dimCanvas_x = window_width - cnvx;
-    var dimCanvas_y = window_height - cnvy;
+    var dimCanvas_y = window_height - 2*cnvy;
     const back_color = 255;
     var rectangle;
 
@@ -72,7 +85,7 @@
 
         var button_newGame = createButton('new Game');
         button_newGame.addClass('newGame');
-        button_newGame.position(window_width - 90, cnvy);
+        button_newGame.position(window_width - 90, cnvy + 10);
 
         document.querySelector('.newGame').addEventListener('click', () => {
 
@@ -84,7 +97,7 @@
 
         var button_Help = createButton('Help');
         button_Help.addClass('Help');
-        button_Help.position(10, cnvy);
+        button_Help.position(10, cnvy + 10);
 
         document.querySelector('.Help').addEventListener('click', () => {
 

@@ -76,6 +76,9 @@ app.post('/access', (request, response) => {
   router.get(`/LogicGames/${user}/SkyScrapers/Interaction`, (req, res) => {
     res.sendFile(path_to_skyscrapers + '/Interaction.js');
   })
+  router.get(`/LogicGames/${user}/SkyScrapers/images`, (req, res) => {
+    res.sendFile(path_to_skyscrapers + '/background.jpg');
+  })
 
   //battleship
   router.get(`/LogicGames/${user}/BattleShip`, (req, res) => {
