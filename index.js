@@ -100,6 +100,9 @@ app.post('/access', (request, response) => {
   router.get(`/LogicGames/${user}/BattleShip/Navi`, (req, res) => {
     res.sendFile(path_to_BattleShip + '/Navi.js');
   })
+  router.get(`/LogicGames/${user}/BattleShip/images`, (req, res) => {
+    res.sendFile(path_to_BattleShip + '/background.jpg');
+  })
 
   app.post(`/LogicGames/${user}/select`, (req, res) => {
     res.json({
