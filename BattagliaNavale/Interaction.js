@@ -29,7 +29,7 @@ function CheckGrid() {
 
                     if (distance(cellX, cellY, x, y) < side_length / 2 && !el.used) {
                         let previousEl = cell.element;
-                        if (previousEl) Elements[previousEl].used = false;
+                        if (previousEl!=null) Elements[previousEl].used = false;
                         cell.element = el.index;
                         cell.type = selected_element;
                         cell.rotation = el.rotation;
