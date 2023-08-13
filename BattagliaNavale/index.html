@@ -64,7 +64,7 @@
     var window_width = window.innerWidth;
 
     //REGOLE DEL GIOCO
-    var N = 7; //numero di righe e colonne
+    var N = 8; //numero di righe e colonne
     var cols = N;
     var rows = N;
 
@@ -120,8 +120,8 @@
         background(back_color);
 
         let buttonSize = 1/6 * width;
-        RotateButton = new ButtonRotate(7/8 * width, 5.5 / 8 * height, buttonSize)
-        RemoveButton = new ButtonRubbish(7 / 8 * width, RotateButton.y + 4/3 * buttonSize, buttonSize)
+        RotateButton = new ButtonRotate(7 / 9 * width, (N + 3) * side_length, buttonSize)
+        RemoveButton = new ButtonRubbish(7 / 9 * width, RotateButton.y + 4/3 * buttonSize, buttonSize)
 
         CreateGame();
         RemoveButton.show();
