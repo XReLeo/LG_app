@@ -19,7 +19,7 @@
                 server serves the html file that youo whant to access-->
                 <li class='game'><a href="" class='game' id = 'sky'>Skyscrapers</a></li>
                 <li class='game'><a href="" class='game' id = 'bs'>Battleship</a></li>
-                <li class='game'><a href="" class='game'>Chiocciola</a></li>
+                <li class='game'><a href="" class='game' id = 'piramide'>Piramide</a></li>
             </ul>
         </nav>
     </center>
@@ -45,8 +45,10 @@
 
                 const path_sky = `/LogicGames/${user}/SkyScrapers`
                 const path_bs = `/LogicGames/${user}/BattleShip`
+                const path_piramide = `/LogicGames/${user}/Piramide`
                 document.getElementById('sky').href = path_sky
                 document.getElementById('bs').href = path_bs
+                document.getElementById('piramide').href = path_piramide
                 
             } catch (error) {
                 console.error(`Error: ${error}`);

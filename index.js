@@ -31,6 +31,7 @@ db.loadDatabase();//load the file on the memory
 
 const path_to_skyscrapers = `${__dirname}/Grattacieli`
 const path_to_BattleShip = `${__dirname}/BattagliaNavale`
+const path_to_piramide = `${__dirname}/Piramide`
 
 //EACH ROUTe HAS TO HAVE ITS OWN FILE HTML TO RENDER, AND YOU CAN GO 
 //FROM ONE TO ANOTHER USING LINKS IN THE HTML FILES
@@ -102,6 +103,20 @@ app.post('/access', (request, response) => {
   })
   router.get(`/LogicGames/${user}/BattleShip/images`, (req, res) => {
     res.sendFile(path_to_BattleShip + '/background.jpg');
+  })
+
+  //piramide
+  router.get(`/LogicGames/${user}/Piramide`, (req, res) => {
+    res.sendFile(path_to_piramide + '/index.html');
+  })
+  router.get(`/LogicGames/${user}/Piramide/GameCreation`, (req, res) => {
+    res.sendFile(path_to_piramide + '/GameCreation.js');
+  })
+  router.get(`/LogicGames/${user}/Piramide/Interaction`, (req, res) => {
+    res.sendFile(path_to_piramide + '/Interaction.js');
+  })
+  router.get(`/LogicGames/${user}/Piramide/Grid`, (req, res) => {
+    res.sendFile(path_to_piramide + '/Grid.js');
   })
 
   app.post(`/LogicGames/${user}/select`, (req, res) => {
